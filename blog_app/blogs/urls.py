@@ -1,17 +1,14 @@
-from django.urls import path
-from django.conf.urls import url, include
-from rest_framework import routers
-
+from django.conf.urls import include, url
 from . import views
+from rest_framework.urlpatterns import format_suffix_patterns
 
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'posts', views.PostViewSet)
-
-app_name = 'blogs'
+app_name = 'blogs-api'
 urlpatterns = [
-  path('', views.index, name='index'),
-  path('<int:post_id>/', views.detail, name='detail'),
-  path('<int:post_id>/like/', views.like, name='like'),
-  path('api/v1/', include(router.urls)),
+  url(r'^users/$', views.UserList.as_view()),
+  url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
+  url(r'^posts/$', views.PostList.as_view()),
+  url(r'^posts/(?P<pk>[0-9]+)/$', views.PostDetail.as_view()),
+  url(r'^', include('rest_framework.urls')),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)

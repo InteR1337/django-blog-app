@@ -5,6 +5,7 @@ from django.utils import timezone
 
 class User(models.Model):
   name = models.CharField(max_length=30)
+  is_admin = models.BooleanField(default=False)
 
   def __str__(self):
     return self.name

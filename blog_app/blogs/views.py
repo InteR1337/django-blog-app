@@ -1,36 +1,65 @@
-from django.http import HttpResponse, Http404
-from django.shortcuts import render, get_object_or_404
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
+from .permissions import IsAdmin
 from .models import User, Post
-from rest_framework import viewsets
 from .serializers import UserSerializer, PostSerializer
+from rest_framework import generics, permissions
 
-def index(request):
-  latest_posts_list = Post.objects.order_by('-pub_date')[:5]
-  context = {
-    'latest_posts_list': latest_posts_list
-  }
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'posts': reverse('post-list', request=request, format=format),
+    })
 
-  return render(request, 'blogs/index.html', context)
-
-def detail(request, post_id):
-  post = get_object_or_404(Post, pk=post_id)
-  return render(request, 'blogs/detail.html', {'post': post})
-
-def like(request, post_id):
-  return HttpResponse("You're liking the post")
-
-
-class UserViewSet(viewsets.ModelViewSet):
-  """
-  API endpoint that allows users to be viewed or edited.
-  """
-  queryset = User.objects.all().order_by('name')
+class UserList(generics.ListCreateAPIView):
+  queryset = User.objects.all()
   serializer_class = UserSerializer
 
+  def get(self, request, *args, **kwargs):
+    return self.list(request, *args, **kwargs)
 
-class PostViewSet(viewsets.ModelViewSet):
-  """
-  API endpoint that allows posts to be viewed or edited.
-  """
-  queryset = Post.objects.all().order_by('-pub_date')
+  def post(self, request, *args, **kwargs):
+    return self.create(request, *args, **kwargs)
+
+
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
+  queryset = User.objects.all()
+  serializer_class = UserSerializer
+
+  def get(self, request, *args, **kwargs):
+    return self.retrieve(request, *args, **kwargs)
+
+  def put(self, request, *args, **kwargs):
+    return self.update(request, *args, **kwargs)
+
+  def delete(self, request, *args, **kwargs):
+    return self.destroy(request, *args, **kwargs)
+
+
+class PostList(generics.ListCreateAPIView):
+  queryset = Post.objects.all()
   serializer_class = PostSerializer
+  permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+  def get(self, request, *args, **kwargs):
+    return self.list(request, *args, **kwargs)
+
+  def post(self, request, *args, **kwargs):
+    return self.create(request, *args, **kwargs)
+
+
+class PostDetail(generics.RetrieveUpdateDestroyAPIView):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+  permission_classes = (IsAdmin,)
+
+  def get(self, request, *args, **kwargs):
+    return self.retrieve(request, *args, **kwargs)
+
+  def put(self, request, *args, **kwargs):
+    return self.update(request, *args, **kwargs)
+
+  def delete(self, request, *args, **kwargs):
+    return self.destroy(request, *args, **kwargs)

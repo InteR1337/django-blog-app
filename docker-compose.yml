@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  web:
+    image: djangoblogapp
+    command: >
+      bash -c "python3 ./blog_app/manage.py migrate
+      && echo \"from django.contrib.auth import get_user_model;
+      User = get_user_model();
+      User.objects.filter(is_superuser=True).delete();
+      \" | python3 ./blog_app/manage.py shell
+      && python3 ./blog_app/manage.py createsuperuser
+      && python3 ./blog_app/manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
