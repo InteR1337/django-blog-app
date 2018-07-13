@@ -10,6 +10,7 @@ from rest_framework import generics, permissions
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
+        'users': reverse('user-list', request=request, format=format),
         'posts': reverse('post-list', request=request, format=format),
     })
 
